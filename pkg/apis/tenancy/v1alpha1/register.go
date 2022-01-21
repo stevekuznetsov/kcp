@@ -49,6 +49,8 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&WorkspaceList{},
 		&WorkspaceShard{},
 		&WorkspaceShardList{},
+		&WorkspaceWriteLock{},
+		&WorkspaceWriteLockList{},
 	)
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil

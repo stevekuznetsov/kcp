@@ -29,6 +29,7 @@ type TenancyV1alpha1Interface interface {
 	RESTClient() rest.Interface
 	WorkspacesGetter
 	WorkspaceShardsGetter
+	WorkspaceWriteLocksGetter
 }
 
 // TenancyV1alpha1Client is used to interact with features provided by the tenancy.kcp.dev group.
@@ -43,6 +44,10 @@ func (c *TenancyV1alpha1Client) Workspaces() WorkspaceInterface {
 
 func (c *TenancyV1alpha1Client) WorkspaceShards() WorkspaceShardInterface {
 	return newWorkspaceShards(c)
+}
+
+func (c *TenancyV1alpha1Client) WorkspaceWriteLocks() WorkspaceWriteLockInterface {
+	return newWorkspaceWriteLocks(c)
 }
 
 // NewForConfig creates a new TenancyV1alpha1Client for the given config.

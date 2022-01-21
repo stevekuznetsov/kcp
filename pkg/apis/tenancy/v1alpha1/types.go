@@ -253,3 +253,60 @@ type WorkspaceShardList struct {
 
 	Items []WorkspaceShard `json:"items"`
 }
+
+// WorkspaceWriteLock is a checkpointing object to implement write locks on Workspaces.
+//
+// +crd
+// +genclient
+// +genclient:nonNamespaced
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +kubebuilder:subresource:status
+// +kubebuilder:resource:scope=Cluster,categories=kcp
+type WorkspaceWriteLock struct {
+	metav1.TypeMeta `json:",inline"`
+	// +optional
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	// +optional
+	Spec WorkspaceWriteLockSpec `json:"spec,omitempty"`
+
+	// +optional
+	Status WorkspaceWriteLockStatus `json:"status,omitempty"`
+}
+
+// WorkspaceWriteLockSpec holds the intended state for the lock.
+type WorkspaceWriteLockSpec struct {
+	// Locked determines the intended state of this lock.
+	Locked bool `json:"locked"`
+
+	// Quorum is the count of acknowledgements necessary for a state change.
+	Quorum int `json:"quorum"`
+}
+
+// WorkspaceWriteLockStatus holds the current observed state for the lock.
+type WorkspaceWriteLockStatus struct {
+	// Acknowledgements expose API server replicas acknowledging the intended state.
+	// +optional
+	// +listType=map
+	// +listMapKey=identifier
+	// +patchStrategy=merge
+	// +patchMergeKey=identifier
+	Acknowledgements []WorkspaceWriteLockAcknowledgement `json:"acknowledgements,omitempty" patchStrategy:"merge" patchMergeKey:"identifier"`
+}
+
+// WorkspaceWriteLockAcknowledgement records that an API server replica is rejecting
+// writes after some resource version.
+type WorkspaceWriteLockAcknowledgement struct {
+	Identifier      string `json:"identifier"`
+	ResourceVersion string `json:"resourceVersion"`
+}
+
+// WorkspaceWriteLockList is a list of WorkspaceWriteLocks
+//
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type WorkspaceWriteLockList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata"`
+
+	Items []WorkspaceWriteLock `json:"items"`
+}

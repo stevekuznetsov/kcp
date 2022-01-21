@@ -25,3 +25,7 @@ type WorkspaceListerExpansion interface{}
 // WorkspaceShardListerExpansion allows custom methods to be added to
 // WorkspaceShardLister.
 type WorkspaceShardListerExpansion interface{}
+
+// WorkspaceWriteLockListerExpansion allows custom methods to be added to
+// WorkspaceWriteLockLister.
+type WorkspaceWriteLockListerExpansion interface{}

@@ -28,6 +28,8 @@ type Interface interface {
 	Workspaces() WorkspaceInformer
 	// WorkspaceShards returns a WorkspaceShardInformer.
 	WorkspaceShards() WorkspaceShardInformer
+	// WorkspaceWriteLocks returns a WorkspaceWriteLockInformer.
+	WorkspaceWriteLocks() WorkspaceWriteLockInformer
 }
 
 type version struct {
@@ -49,4 +51,9 @@ func (v *version) Workspaces() WorkspaceInformer {
 // WorkspaceShards returns a WorkspaceShardInformer.
 func (v *version) WorkspaceShards() WorkspaceShardInformer {
 	return &workspaceShardInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
+}
+
+// WorkspaceWriteLocks returns a WorkspaceWriteLockInformer.
+func (v *version) WorkspaceWriteLocks() WorkspaceWriteLockInformer {
+	return &workspaceWriteLockInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
 }

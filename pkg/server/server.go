@@ -87,6 +87,7 @@ import (
 	"github.com/kcp-dev/kcp/pkg/gvk"
 	kcpnamespace "github.com/kcp-dev/kcp/pkg/reconciler/namespace"
 	"github.com/kcp-dev/kcp/pkg/reconciler/workspace"
+	"github.com/kcp-dev/kcp/pkg/reconciler/workspacelock"
 	"github.com/kcp-dev/kcp/pkg/reconciler/workspaceshard"
 	"github.com/kcp-dev/kcp/pkg/sharding"
 )
@@ -136,6 +137,10 @@ func (s *Server) Run(ctx context.Context) error {
 	if s.cfg.ProfilerAddress != "" {
 		// nolint:errcheck
 		go http.ListenAndServe(s.cfg.ProfilerAddress, nil)
+	}
+
+	if s.cfg.InstallWorkspaceController && s.cfg.APIServerIdentity == "" {
+		return fmt.Errorf("--apiserver-identity required when installing the Workspace controller")
 	}
 
 	var dir string
@@ -600,6 +605,22 @@ func (s *Server) Run(ctx context.Context) error {
 			return err
 		}
 
+		workspaceWriteLockProducingController := workspacelock.NewProducingController(
+			s.cfg.APIServerIdentity, 0,
+			kcpClient,
+			kcpSharedInformerFactory.Tenancy().V1alpha1().Workspaces(),
+			kcpSharedInformerFactory.Tenancy().V1alpha1().WorkspaceWriteLocks(),
+		)
+
+		workspaceWriteLockController, err := workspacelock.NewController(
+			s.cfg.APIServerIdentity,
+			kcpClient,
+			kcpSharedInformerFactory.Tenancy().V1alpha1().WorkspaceWriteLocks(),
+		)
+		if err != nil {
+			return err
+		}
+
 		if err := server.AddPostStartHook("install-workspace-controller", func(context genericapiserver.PostStartHookContext) error {
 			if err := s.waitForCRDServer(context.StopCh); err != nil {
 				return err
@@ -609,6 +630,7 @@ func (s *Server) Run(ctx context.Context) error {
 			requiredCrds := []metav1.GroupKind{
 				{Group: tenancyapi.GroupName, Kind: "workspaces"},
 				{Group: tenancyapi.GroupName, Kind: "workspaceshards"},
+				{Group: tenancyapi.GroupName, Kind: "workspacewritelocks"},
 			}
 			crdClient := apiextensionsv1client.NewForConfigOrDie(adminConfig).CustomResourceDefinitions()
 			if err := config.BootstrapCustomResourceDefinitions(ctx, crdClient, requiredCrds); err != nil {
@@ -618,6 +640,8 @@ func (s *Server) Run(ctx context.Context) error {
 			ctx := adaptContext(context)
 			go workspaceController.Start(ctx, 2)
 			go workspaceShardController.Start(ctx, 2)
+			go workspaceWriteLockProducingController.Start(ctx, 2)
+			go workspaceWriteLockController.Start(ctx, 2)
 
 			kcpSharedInformerFactory.Start(context.StopCh)
 			kubeSharedInformerFactory.Start(context.StopCh)

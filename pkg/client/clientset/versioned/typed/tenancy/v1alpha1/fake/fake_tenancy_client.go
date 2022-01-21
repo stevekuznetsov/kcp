@@ -37,6 +37,10 @@ func (c *FakeTenancyV1alpha1) WorkspaceShards() v1alpha1.WorkspaceShardInterface
 	return &FakeWorkspaceShards{c}
 }
 
+func (c *FakeTenancyV1alpha1) WorkspaceWriteLocks() v1alpha1.WorkspaceWriteLockInterface {
+	return &FakeWorkspaceWriteLocks{c}
+}
+
 // RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
 func (c *FakeTenancyV1alpha1) RESTClient() rest.Interface {

@@ -21,3 +21,5 @@ package v1alpha1
 type WorkspaceExpansion interface{}
 
 type WorkspaceShardExpansion interface{}
+
+type WorkspaceWriteLockExpansion interface{}

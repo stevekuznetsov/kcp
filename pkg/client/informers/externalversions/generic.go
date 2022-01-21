@@ -70,6 +70,8 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Tenancy().V1alpha1().Workspaces().Informer()}, nil
 	case tenancyv1alpha1.SchemeGroupVersion.WithResource("workspaceshards"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Tenancy().V1alpha1().WorkspaceShards().Informer()}, nil
+	case tenancyv1alpha1.SchemeGroupVersion.WithResource("workspacewritelocks"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Tenancy().V1alpha1().WorkspaceWriteLocks().Informer()}, nil
 
 	}
 

@@ -21,6 +21,7 @@ import (
 
 	"github.com/spf13/pflag"
 
+	"k8s.io/apiserver/pkg/util/feature"
 	kubeoptions "k8s.io/kubernetes/pkg/kubeapiserver/options"
 
 	"github.com/kcp-dev/kcp/pkg/etcd"
@@ -58,6 +59,7 @@ type Config struct {
 	InstallClusterController   bool
 	ClusterControllerOptions   *cluster.Options
 	InstallWorkspaceController bool
+	APIServerIdentity          string
 	InstallNamespaceScheduler  bool
 	KubeConfigPath             string
 	Listen                     string
@@ -72,6 +74,7 @@ func BindOptions(c *Config, fs *pflag.FlagSet) *Config {
 	fs.AddFlag(pflag.PFlagFromGoFlag(flag.CommandLine.Lookup("v")))
 	fs.BoolVar(&c.InstallClusterController, "install-cluster-controller", c.InstallClusterController, "Registers the sample cluster custom resource, and the related controller to allow registering physical clusters")
 	fs.BoolVar(&c.InstallWorkspaceController, "install-workspace-controller", c.InstallWorkspaceController, "Registers the workspace custom resource, and the related controller to allow scheduling workspaces to shards")
+	fs.StringVar(&c.APIServerIdentity, "apiserver-identity", c.APIServerIdentity, "Identity of this server, used to coordinate locking for Workspaces.")
 	fs.BoolVar(&c.InstallNamespaceScheduler, "install-namespace-scheduler", c.InstallNamespaceScheduler, "Registers the namespace scheduler to allow scheduling namespaces and resource to physical clusters")
 	fs.StringVar(&c.Listen, "listen", c.Listen, "Address:port to bind to")
 	fs.StringSliceVar(&c.EtcdClientInfo.Endpoints, "etcd-servers", c.EtcdClientInfo.Endpoints, "List of external etcd servers to connect with (scheme://ip:port), comma separated. If absent an in-process etcd will be created.")
@@ -90,5 +93,6 @@ func BindOptions(c *Config, fs *pflag.FlagSet) *Config {
 	c.ClusterControllerOptions = cluster.BindOptions(c.ClusterControllerOptions, fs)
 
 	c.Authentication.AddFlags(fs)
+	feature.DefaultMutableFeatureGate.AddFlag(fs)
 	return c
 }
