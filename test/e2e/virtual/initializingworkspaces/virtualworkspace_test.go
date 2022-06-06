@@ -139,7 +139,7 @@ func TestInitializingWorkspacesVirtualWorkspaceAccess(t *testing.T) {
 		"alpha", "beta",
 	} {
 		clusterWorkspaceInitializers[name] = tenancyv1alpha1.ClusterWorkspaceInitializer{
-			Name: name + "-" + suffix(),
+			Name: tenancyv1alpha1.ClusterWorkspaceInitializerName(name + "-" + suffix()),
 			Path: "root:org:ws",
 		}
 	}
@@ -156,9 +156,9 @@ func TestInitializingWorkspacesVirtualWorkspaceAccess(t *testing.T) {
 		"beta":  {"beta"},
 		"gamma": {"alpha", "beta"},
 	} {
-		var initializerNames []tenancyv1alpha1.ClusterWorkspaceInitializer
+		var initializerNames []tenancyv1alpha1.ClusterWorkspaceInitializerName
 		for _, initializerName := range initializers {
-			initializerNames = append(initializerNames, clusterWorkspaceInitializers[initializerName])
+			initializerNames = append(initializerNames, clusterWorkspaceInitializers[initializerName].Name)
 		}
 		_, err = sourceKcpTenancyClient.ClusterWorkspaceTypes().Create(ctx, &tenancyv1alpha1.ClusterWorkspaceType{
 			ObjectMeta: metav1.ObjectMeta{

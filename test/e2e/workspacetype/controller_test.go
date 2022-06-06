@@ -42,8 +42,9 @@ func TestClusterWorkspaceTypes(t *testing.T) {
 
 	type runningServer struct {
 		framework.RunningServer
-		orgKcpClient clientset.Interface
-		orgExpect    framework.RegisterClusterWorkspaceExpectation
+		orgKcpClient     clientset.Interface
+		orgWorkspaceName string
+		orgExpect        framework.RegisterClusterWorkspaceExpectation
 	}
 	var testCases = []struct {
 		name string
@@ -109,7 +110,7 @@ func TestClusterWorkspaceTypes(t *testing.T) {
 				_, err := server.orgKcpClient.TenancyV1alpha1().ClusterWorkspaceTypes().Create(ctx, &tenancyv1alpha1.ClusterWorkspaceType{
 					ObjectMeta: metav1.ObjectMeta{Name: "foo"},
 					Spec: tenancyv1alpha1.ClusterWorkspaceTypeSpec{
-						Initializers: []tenancyv1alpha1.ClusterWorkspaceInitializer{{Name: "a", Path: "root:org:ws"}},
+						Initializers: []tenancyv1alpha1.ClusterWorkspaceInitializerName{"a"},
 					},
 				}, metav1.CreateOptions{})
 				require.NoError(t, err, "failed to create workspace type")
@@ -135,7 +136,7 @@ func TestClusterWorkspaceTypes(t *testing.T) {
 				err = retry.RetryOnConflict(retry.DefaultRetry, func() error {
 					workspace, err = server.orgKcpClient.TenancyV1alpha1().ClusterWorkspaces().Get(ctx, workspace.Name, metav1.GetOptions{})
 					require.NoError(t, err)
-					workspace.Status.Initializers = initialization.EnsureInitializerAbsent("a", "root:org:ws", workspace.Status.Initializers)
+					workspace.Status.Initializers = initialization.EnsureInitializerAbsent("a", server.orgWorkspaceName, workspace.Status.Initializers)
 					_, err = server.orgKcpClient.TenancyV1alpha1().ClusterWorkspaces().UpdateStatus(ctx, workspace, metav1.UpdateOptions{})
 					return err
 				})
@@ -179,9 +180,10 @@ func TestClusterWorkspaceTypes(t *testing.T) {
 			require.NoError(t, err, "failed to start expecter")
 
 			testCase.work(ctx, t, runningServer{
-				RunningServer: server,
-				orgKcpClient:  orgKcpClient,
-				orgExpect:     orgExpect,
+				RunningServer:    server,
+				orgKcpClient:     orgKcpClient,
+				orgWorkspaceName: orgClusterName.String(),
+				orgExpect:        orgExpect,
 			})
 		})
 	}

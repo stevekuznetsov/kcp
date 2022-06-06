@@ -143,8 +143,9 @@ func (o *clusterWorkspaceTypeExists) Admit(ctx context.Context, a admission.Attr
 	}
 
 	// add initializers from type to workspace
+	logicalCluster := logicalcluster.From(cwt).String()
 	for _, i := range cwt.Spec.Initializers {
-		cw.Status.Initializers = initialization.EnsureInitializerPresent(i.Name, i.Path, cw.Status.Initializers)
+		cw.Status.Initializers = initialization.EnsureInitializerPresent(i, logicalCluster, cw.Status.Initializers)
 	}
 
 	return updateUnstructured(u, cw)
@@ -228,9 +229,10 @@ func (o *clusterWorkspaceTypeExists) Validate(ctx context.Context, a admission.A
 	if a.GetOperation() == admission.Update && transitioningToInitializing {
 		// this is a transition to initializing. Check that all initializers are there
 		// (no other admission plugin removed any).
+		logicalCluster := logicalcluster.From(cwt).String()
 		for _, initializer := range cwt.Spec.Initializers {
-			if !initialization.InitializerPresent(initializer.Name, initializer.Path, cw.Status.Initializers) {
-				return admission.NewForbidden(a, fmt.Errorf("spec.initializers %s|%s does not exist", initializer.Path, initializer.Name))
+			if !initialization.InitializerPresent(initializer, logicalCluster, cw.Status.Initializers) {
+				return admission.NewForbidden(a, fmt.Errorf("spec.initializers %s|%s does not exist", initializer, logicalCluster))
 			}
 		}
 	}

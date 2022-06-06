@@ -2674,8 +2674,9 @@ func schema_pkg_apis_tenancy_v1alpha1_ClusterWorkspaceTypeSpec(ref common.Refere
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
 									SchemaProps: spec.SchemaProps{
-										Default: map[string]interface{}{},
-										Ref:     ref("github.com/kcp-dev/kcp/pkg/apis/tenancy/v1alpha1.ClusterWorkspaceInitializer"),
+										Default: "",
+										Type:    []string{"string"},
+										Format:  "",
 									},
 								},
 							},
@@ -2700,8 +2701,6 @@ func schema_pkg_apis_tenancy_v1alpha1_ClusterWorkspaceTypeSpec(ref common.Refere
 				},
 			},
 		},
-		Dependencies: []string{
-			"github.com/kcp-dev/kcp/pkg/apis/tenancy/v1alpha1.ClusterWorkspaceInitializer"},
 	}
 }
 

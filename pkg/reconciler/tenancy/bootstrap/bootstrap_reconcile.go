@@ -42,7 +42,7 @@ func (c *controller) reconcile(ctx context.Context, workspace *tenancyv1alpha1.C
 	}
 
 	// have we done our work before?
-	initializerName := typeInitializerKeyDomain + "/" + strings.ToLower(c.workspaceType)
+	initializerName := tenancyv1alpha1.ClusterWorkspaceInitializerName(typeInitializerKeyDomain + "/" + strings.ToLower(c.workspaceType))
 	if !initialization.InitializerPresent(initializerName, c.initializerPath, workspace.Status.Initializers) {
 		return nil
 	}

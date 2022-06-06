@@ -338,7 +338,7 @@ func (in *ClusterWorkspaceTypeSpec) DeepCopyInto(out *ClusterWorkspaceTypeSpec) 
 	*out = *in
 	if in.Initializers != nil {
 		in, out := &in.Initializers, &out.Initializers
-		*out = make([]ClusterWorkspaceInitializer, len(*in))
+		*out = make([]ClusterWorkspaceInitializerName, len(*in))
 		copy(*out, *in)
 	}
 	if in.AdditionalWorkspaceLabels != nil {

@@ -25,7 +25,7 @@ import (
 	tenancyv1alpha1 "github.com/kcp-dev/kcp/pkg/apis/tenancy/v1alpha1"
 )
 
-func InitializerPresent(name, path string, initializers []tenancyv1alpha1.ClusterWorkspaceInitializer) bool {
+func InitializerPresent(name tenancyv1alpha1.ClusterWorkspaceInitializerName, path string, initializers []tenancyv1alpha1.ClusterWorkspaceInitializer) bool {
 	for i := range initializers {
 		if initializers[i].Name == name && initializers[i].Path == path {
 			return true
@@ -34,7 +34,7 @@ func InitializerPresent(name, path string, initializers []tenancyv1alpha1.Cluste
 	return false
 }
 
-func EnsureInitializerPresent(name, path string, initializers []tenancyv1alpha1.ClusterWorkspaceInitializer) []tenancyv1alpha1.ClusterWorkspaceInitializer {
+func EnsureInitializerPresent(name tenancyv1alpha1.ClusterWorkspaceInitializerName, path string, initializers []tenancyv1alpha1.ClusterWorkspaceInitializer) []tenancyv1alpha1.ClusterWorkspaceInitializer {
 	for i := range initializers {
 		if initializers[i].Name == name && initializers[i].Path == path {
 			return initializers // already present
@@ -47,7 +47,7 @@ func EnsureInitializerPresent(name, path string, initializers []tenancyv1alpha1.
 	return initializers
 }
 
-func EnsureInitializerAbsent(name, path string, initializers []tenancyv1alpha1.ClusterWorkspaceInitializer) []tenancyv1alpha1.ClusterWorkspaceInitializer {
+func EnsureInitializerAbsent(name tenancyv1alpha1.ClusterWorkspaceInitializerName, path string, initializers []tenancyv1alpha1.ClusterWorkspaceInitializer) []tenancyv1alpha1.ClusterWorkspaceInitializer {
 	removeAt := -1
 	for i := range initializers {
 		if initializers[i].Name == name && initializers[i].Path == path {
@@ -65,7 +65,7 @@ func EnsureInitializerAbsent(name, path string, initializers []tenancyv1alpha1.C
 // to create a unique identifier from this information, prefixing the hash in order to create a value which
 // is unlikely to collide, and adding the full hash as a value in order to make it difficult to forge the pair.
 func InitializerToLabel(initializer tenancyv1alpha1.ClusterWorkspaceInitializer) (string, string) {
-	hash := fmt.Sprintf("%x", sha256.Sum224([]byte(initializer.Path+initializer.Name)))
+	hash := fmt.Sprintf("%x", sha256.Sum224([]byte(initializer.Path+string(initializer.Name))))
 	labelKeyHashLength := validation.LabelValueMaxLength - len(tenancyv1alpha1.ClusterWorkspaceInitializerLabelPrefix)
 	return tenancyv1alpha1.ClusterWorkspaceInitializerLabelPrefix + hash[0:labelKeyHashLength], hash
 }

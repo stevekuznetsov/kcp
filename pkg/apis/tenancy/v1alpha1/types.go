@@ -110,7 +110,7 @@ type ClusterWorkspaceTypeSpec struct {
 	// will stay in the phase "Initializing" state until all initializers are cleared.
 	//
 	// +optional
-	Initializers []ClusterWorkspaceInitializer `json:"initializers,omitempty"`
+	Initializers []ClusterWorkspaceInitializerName `json:"initializers,omitempty"`
 
 	// additionalWorkspaceLabels are a set of labels that will be added to a
 	// ClusterWorkspace on creation.
@@ -134,16 +134,20 @@ type ClusterWorkspaceTypeList struct {
 type ClusterWorkspaceInitializer struct {
 	// name is a unique string corresponding to a cluster workspace
 	// initialization controller for the given type of workspaces.
-	//
-	// +kubebuilder:validation:MaxLength=32
-	// +kubebuilder:validation:Pattern=`^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?$`
-	Name string `json:"name"`
+	Name ClusterWorkspaceInitializerName `json:"name"`
 
 	// path is an absolute reference to the workspace that owns this initializer, e.g. root:org:ws.
 	//
 	// +kubebuilder:validation:Pattern:="^root(:[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$"
 	Path string `json:"path"`
 }
+
+// ClusterWorkspaceInitializerName is a unique string corresponding to a cluster workspace
+// initialization controller for the given type of workspaces.
+//
+// +kubebuilder:validation:MaxLength=32
+// +kubebuilder:validation:Pattern=`^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?$`
+type ClusterWorkspaceInitializerName string
 
 // ClusterWorkspacePhaseType is the type of the current phase of the workspace
 type ClusterWorkspacePhaseType string

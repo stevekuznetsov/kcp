@@ -57,7 +57,7 @@ func provideForwardingRestStorage(ctx context.Context, clusterClient dynamic.Clu
 			tenancyv1alpha1.ClusterWorkspacePhaseLabel: string(tenancyv1alpha1.ClusterWorkspacePhaseInitializing),
 		}
 		key, value := initialization.InitializerToLabel(tenancyv1alpha1.ClusterWorkspaceInitializer{
-			Name: initializerName,
+			Name: tenancyv1alpha1.ClusterWorkspaceInitializerName(initializerName),
 			Path: initializerWorkspace,
 		})
 		labelSelector[key] = value
