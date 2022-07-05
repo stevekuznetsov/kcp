@@ -1231,6 +1231,132 @@ func TestValidate(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			// if A only wants X as children, B inheriting from A cannot allow Z in addition.
+			name: "fails if subtype allows creation of a type that a parent doesn't allow",
+			path: logicalcluster.New("root:org:ws"),
+			workspaces: []*tenancyv1alpha1.ClusterWorkspace{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:        "ws",
+						ClusterName: "root:org",
+					},
+					Spec: tenancyv1alpha1.ClusterWorkspaceSpec{
+						Type: tenancyv1alpha1.ClusterWorkspaceTypeReference{
+							Name: "B",
+							Path: "root:org",
+						},
+					},
+				},
+			},
+			types: []*tenancyv1alpha1.ClusterWorkspaceType{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:        "a",
+						ClusterName: "root:org",
+					},
+					Spec: tenancyv1alpha1.ClusterWorkspaceTypeSpec{
+						AllowedChildren: &tenancyv1alpha1.ClusterWorkspaceTypeSelector{
+							Types: []tenancyv1alpha1.ClusterWorkspaceTypeReference{{Name: "X", Path: "root:org"}},
+						},
+					},
+					Status: tenancyv1alpha1.ClusterWorkspaceTypeStatus{
+						TypeAliases: []tenancyv1alpha1.ClusterWorkspaceTypeReference{
+							{Path: "root:org", Name: "A"},
+						},
+						Conditions: []conditionsv1alpha1.Condition{
+							{
+								Type:   conditionsv1alpha1.ReadyCondition,
+								Status: corev1.ConditionTrue,
+							},
+						},
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:        "b",
+						ClusterName: "root:org",
+					},
+					Spec: tenancyv1alpha1.ClusterWorkspaceTypeSpec{
+						AllowedParents: &tenancyv1alpha1.ClusterWorkspaceTypeSelector{Any: true},
+						AllowedChildren: &tenancyv1alpha1.ClusterWorkspaceTypeSelector{
+							Types: []tenancyv1alpha1.ClusterWorkspaceTypeReference{
+								{Name: "X", Path: "root:org"},
+								{Name: "Z", Path: "root:org"},
+							},
+						},
+					},
+					Status: tenancyv1alpha1.ClusterWorkspaceTypeStatus{
+						TypeAliases: []tenancyv1alpha1.ClusterWorkspaceTypeReference{
+							{Path: "root:org", Name: "A"},
+							{Path: "root:org", Name: "B"},
+						},
+						Conditions: []conditionsv1alpha1.Condition{
+							{
+								Type:   conditionsv1alpha1.ReadyCondition,
+								Status: corev1.ConditionTrue,
+							},
+						},
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:        "x",
+						ClusterName: "root:org",
+					},
+					Spec: tenancyv1alpha1.ClusterWorkspaceTypeSpec{
+						AllowedParents:  &tenancyv1alpha1.ClusterWorkspaceTypeSelector{Any: true},
+						AllowedChildren: &tenancyv1alpha1.ClusterWorkspaceTypeSelector{Any: true},
+					},
+					Status: tenancyv1alpha1.ClusterWorkspaceTypeStatus{
+						TypeAliases: []tenancyv1alpha1.ClusterWorkspaceTypeReference{
+							{Path: "root:org", Name: "X"},
+						},
+						Conditions: []conditionsv1alpha1.Condition{
+							{
+								Type:   conditionsv1alpha1.ReadyCondition,
+								Status: corev1.ConditionTrue,
+							},
+						},
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:        "z",
+						ClusterName: "root:org",
+					},
+					Spec: tenancyv1alpha1.ClusterWorkspaceTypeSpec{
+						AllowedParents: &tenancyv1alpha1.ClusterWorkspaceTypeSelector{
+							Types: []tenancyv1alpha1.ClusterWorkspaceTypeReference{{Name: "B", Path: "root:org"}},
+						},
+					},
+					Status: tenancyv1alpha1.ClusterWorkspaceTypeStatus{
+						TypeAliases: []tenancyv1alpha1.ClusterWorkspaceTypeReference{
+							{Path: "root:org", Name: "Z"},
+						},
+						Conditions: []conditionsv1alpha1.Condition{
+							{
+								Type:   conditionsv1alpha1.ReadyCondition,
+								Status: corev1.ConditionTrue,
+							},
+						},
+					},
+				},
+			},
+			attr: createAttr(&tenancyv1alpha1.ClusterWorkspace{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+				},
+				Spec: tenancyv1alpha1.ClusterWorkspaceSpec{
+					Type: tenancyv1alpha1.ClusterWorkspaceTypeReference{
+						Name: "Z",
+						Path: "root:org",
+					},
+				},
+			}),
+			authzDecision: authorizer.DecisionAllow,
+			wantErr:       true,
+		},
+		{
 			name: "fails if not allowed",
 			path: logicalcluster.New("root:org:ws"),
 			attr: createAttr(&tenancyv1alpha1.ClusterWorkspace{
